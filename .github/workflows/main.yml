@@ -25,6 +25,8 @@ jobs:
         run: pip install notebook pandas numpy google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client # Dodaj wymagane pakiety
 
       - name: Run Jupyter Notebook
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
         run: |
           jupyter nbconvert --to notebook --execute Automatic.ipynb --output wynik.ipynb
 
