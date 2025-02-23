@@ -2,8 +2,11 @@ name: Web Scraping Workflow - 2
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Uruchomienie codziennie o godzinie 00:00 UTC
-  workflow_dispatch:  # Umożliwia ręczne uruchomienie workflow
+    - cron: "0 6 * * *"   # 07:00 UTC
+    - cron: "0 10 * * *"  # 11:00 UTC
+    - cron: "0 15 * * *"  # 16:00 UTC
+    - cron: "0 19 * * *"  # 20:00 UTC
+  workflow_dispatch:  # Manual trigger
 
 jobs:
   scraping_job:
