@@ -1,0 +1,30 @@
+name: Web Scraping Workflow
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Uruchomienie codziennie o godzinie 00:00 UTC
+  workflow_dispatch:  # Umożliwia ręczne uruchomienie workflow
+
+jobs:
+  scraping_job:
+    runs-on: ubuntu-latest  # Wybieramy system operacyjny, np. Ubuntu
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2  # Sprawdzenie kodu z repozytorium
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'  # Wybór wersji Pythona
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # Instalacja zależności z requirements.txt
+
+      - name: Run the web scraping script
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}  # Ustawienie zmiennej środowiskowej z secrets
+        run: |
+          python scraping_script.py  # Uruchomienie skryptu
