@@ -19,7 +19,7 @@ jobs:
           python-version: '3.9'
 
       - name: Install dependencies
-        run: pip install notebook pandas numpy  # Dodaj wymagane pakiety
+        run: pip install notebook pandas numpy google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client # Dodaj wymagane pakiety
 
       - name: Run Jupyter Notebook
         run: |
