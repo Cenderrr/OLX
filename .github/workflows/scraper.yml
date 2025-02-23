@@ -1,32 +1,29 @@
-name: Run Scraper 4 times a day
+name: Run Python Script
 
 on:
   schedule:
-    - cron: '0 7 * * *'   # Codziennie o 7:00
-    - cron: '0 11 * * *'   # Codziennie o 11:00
-    - cron: '0 16 * * *'   # Codziennie o 16:00
-    - cron: '0 20 * * *'   # Codziennie o 20:00
-  workflow_dispatch:
+    - cron: "0 7 * * *"   # 07:00 UTC
+    - cron: "0 11 * * *"  # 11:00 UTC
+    - cron: "0 16 * * *"  # 16:00 UTC
+    - cron: "0 20 * * *"  # 20:00 UTC
+  workflow_dispatch:  # Manual trigger
 
 jobs:
-  run_scraper:
+  run-script:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
-        
+        uses: actions/checkout@v4
+      
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'  # Możesz zmienić wersję Python na odpowiednią
-
+          python-version: '3.x'
+      
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install selenium webdriver-manager google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client beautifulsoup4 pandas
-
-      - name: Run scraper
-        env:
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}  # Używamy sekretu z GitHub Secrets
-        run: |
-          python scraper.py
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      
+      - name: Run script
+        run: python your_script.py
