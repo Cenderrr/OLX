@@ -1,7 +1,6 @@
-google-auth==2.19.0
-google-auth-oauthlib==0.6.0
-google-api-python-client==2.94.0
-re==2.2.1
-selenium==4.8.2
-webdriver-manager==3.8.3
-beautifulsoup4==4.11.1
+pandas
+selenium
+google-auth
+google-api-python-client
+webdriver-manager
+beautifulsoup4
