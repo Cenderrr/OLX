@@ -6,6 +6,7 @@ on:
       - main  # Uruchamiaj przy pushu na główną gałąź
   schedule:
     - cron: '0 0 * * *'  # Uruchamiaj codziennie o północy
+  workflow_dispatch:  # Umożliwia ręczne uruchomienie workflow przez interfejs GitHub
 
 jobs:
   upload_to_drive:
