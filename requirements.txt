@@ -1,7 +1,6 @@
 google-auth==2.19.0
 google-auth-oauthlib==0.6.0
 google-api-python-client==2.94.0
-pandas==1.5.3
 re==2.2.1
 selenium==4.8.2
 webdriver-manager==3.8.3
