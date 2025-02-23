@@ -1,4 +1,4 @@
-name: Web Scraping Workflow
+name: Web Scraping Workflow - 2
 
 on:
   schedule:
