@@ -1,6 +1,3 @@
-
-#---------------------------------------------------------------------------#
-
 import os
 import json
 import time
@@ -46,13 +43,14 @@ def download_file_from_drive(file_name, local_path):
     files = response.get('files', [])
     if not files:
         print(f"Plik '{file_name}' nie istnieje. Tworzę nowy...")
-        return
+        return False
     file_id = files[0]['id']
     
     request = drive_service.files().get_media(fileId=file_id)
     with open(local_path, "wb") as f:
         f.write(request.execute())
     print(f"Pobrano plik: {file_name}")
+    return True
 
 # 📤 Wysyłanie pliku do Google Drive
 def upload_file_to_drive(local_path, drive_filename):
@@ -137,6 +135,45 @@ def process_and_save_results(results, search_query):
 
     print(f"✅ Zapisano wyniki dla: {search_query}")
 
-    print(f"Liczba wierszy: {len(df)}")
-    
-    df = pd.DataFrame()  # Czyszczenie danych po zapisaniu
+# 📥 Pobranie listy gier z Google Drive
+def scrape_games_from_drive():
+    games_file = "/tmp/games.csv"
+    success = False
+
+    while not success:
+        try:
+            if not download_file_from_drive("games.csv", games_file):
+                print("Plik games.csv nie istnieje. Tworzę nowy...")
+                df_games = pd.DataFrame(columns=['game', 'category', 'last_scraped'])
+                df_games.to_csv(games_file, index=False)
+                upload_file_to_drive(games_file, "games.csv")
+                return
+
+            df_games = pd.read_csv(games_file)
+
+            for index, row in df_games.iterrows():
+                if str(row.get('last_scraped', '')) == datetime.datetime.now().strftime("%Y-%m-%d"):
+                    print(f"Wyniki dla {row['game']} są aktualne.")
+                    continue
+
+                results = get_olx_items(row['game'], row['category'])
+                if results:
+                    process_and_save_results(results, row['game'])
+                    
+                    df_games.at[index, 'last_scraped'] = datetime.datetime.now().strftime("%Y-%m-%d")
+                    df_games.to_csv(games_file, index=False)
+                    upload_file_to_drive(games_file, "games.csv")
+
+                    print(f"Zapisano wyniki dla {row['game']} i zaktualizowano plik games.csv.")
+
+            success = True
+
+        except Exception as e:
+            print(f"Wystąpił błąd: {e}. Ponawiam pętlę...")
+            time.sleep(30)
+
+    print("✅ Scrapowanie zakończone pomyślnie.")
+
+# 🚀 Uruchomienie skryptu
+if __name__ == "__main__":
+    scrape_games_from_drive()
