@@ -99,18 +99,33 @@ def get_olx_items(search_query, category):
 
         for offer in offers:
             try:
-                img_element = offer.find('img', {'class': 'css-8wsg1m'})
-                title = img_element['alt'] if img_element else "Brak tytułu"
-                price = offer.find('p', {'data-testid': 'ad-price'}).get_text(strip=True) if offer.find('p', {'data-testid': 'ad-price'}) else "Brak ceny"
-                location = offer.find('p', {'data-testid': 'location-date'}).get_text(strip=True) if offer.find('p', {'data-testid': 'location-date'}) else "Brak lokalizacji"
-                link_element = offer.find('a')
+                # Tytuł oferty
+                title_element = offer.find('h6', {'class': 'css-16v5mdi'})  # Zaktualizowany selektor
+                title = title_element.get_text(strip=True) if title_element else "Brak tytułu"
+
+                # Cena
+                price_element = offer.find('p', {'data-testid': 'ad-price'})
+                price = price_element.get_text(strip=True) if price_element else "Brak ceny"
+
+                # Lokalizacja
+                location_element = offer.find('p', {'data-testid': 'location-date'})
+                location = location_element.get_text(strip=True) if location_element else "Brak lokalizacji"
+
+                # Link do oferty
+                link_element = offer.find('a', {'data-cy': 'listing-ad-title'})
                 link = "https://www.olx.pl" + link_element['href'] if link_element else "Brak linku"
 
-                results.append({'title': title, 'price': price, 'location': location, 'link': link})
+                results.append({
+                    'title': title,
+                    'price': price,
+                    'location': location,
+                    'link': link
+                })
             except Exception as e:
-                print(f"Błąd: {e}")
+                print(f"Błąd podczas parsowania oferty: {e}")
                 continue
 
+        # Sprawdź, czy istnieje przycisk "Następna strona"
         try:
             next_button = driver.find_element(By.CSS_SELECTOR, '[data-cy="pagination-forward"]')
             if not next_button.is_enabled():
@@ -126,7 +141,7 @@ def get_olx_items(search_query, category):
 # 📊 Przetwarzanie i zapis danych
 def process_and_save_results(results, search_query):
     now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    base_dir = '/content/drive/My Drive/OLX Scrap'
+    base_dir = '/tmp/OLX_Scrap'  # Użyj tymczasowego katalogu
     file_path = os.path.join(base_dir, 'results.csv')
     backup_dir = os.path.join(base_dir, 'Backup')
     scrap_dir = os.path.join(base_dir, 'Scrap')
