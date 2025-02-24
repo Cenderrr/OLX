@@ -1,0 +1,28 @@
+name: OLX Scraper
+
+on:
+  workflow_dispatch:  # Umożliwia ręczne uruchomienie
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium webdriver-manager beautifulsoup4 pandas google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+
+      - name: Run OLX Scraper
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}  # Sekret z kluczem JSON
+        run: |
+          python olx_scraper.py
