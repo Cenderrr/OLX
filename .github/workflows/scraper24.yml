@@ -1,0 +1,35 @@
+name: Scrape OLX Listings - 24
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # Co 2 godziny
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run scraper
+        run: python scraper.py
+
+      - name: Commit results
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'actions@github.com'
+          git add results_*.csv games.csv
+          git commit -m 'Update scraped data' || echo "No changes to commit"
+          git push
