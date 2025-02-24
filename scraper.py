@@ -141,6 +141,10 @@ def scrape_games_from_drive():
     games_file = "/tmp/games.csv"
     success = False
 
+    def scrape_games_from_drive():
+    games_file = "/tmp/games.csv"
+    success = False
+
     while not success:
         try:
             if not download_file_from_drive("games.csv", games_file):
@@ -151,24 +155,32 @@ def scrape_games_from_drive():
                 return
 
             df_games = pd.read_csv(games_file)
+            now = datetime.datetime.now()
 
             for index, row in df_games.iterrows():
-                if str(row.get('last_scraped', '')) == datetime.datetime.now().strftime("%Y-%m-%d"):
-                    print(f"Wyniki dla {row['game']} są aktualne.")
-                    continue
-
+                last_scraped_str = row.get('last_scraped', '')
+                
+                if last_scraped_str:
+                    try:
+                        last_scraped = datetime.datetime.strptime(last_scraped_str, "%Y-%m-%d %H:%M:%S")
+                        if (now - last_scraped).total_seconds() < 3600:
+                            print(f"Wyniki dla {row['game']} są aktualne.")
+                            continue
+                    except ValueError:
+                        print(f"Błędny format daty w last_scraped dla {row['game']}, aktualizacja...")
+                
                 results = get_olx_items(row['game'], row['category'])
                 if results:
                     process_and_save_results(results, row['game'])
                     
-                    df_games.at[index, 'last_scraped'] = datetime.datetime.now().strftime("%Y-%m-%d")
+                    df_games.at[index, 'last_scraped'] = now.strftime("%Y-%m-%d %H:%M:%S")
                     df_games.to_csv(games_file, index=False)
                     upload_file_to_drive(games_file, "games.csv")
-
+                    
                     print(f"Zapisano wyniki dla {row['game']} i zaktualizowano plik games.csv.")
 
             success = True
-
+        
         except Exception as e:
             print(f"Wystąpił błąd: {e}. Ponawiam pętlę...")
             time.sleep(30)
