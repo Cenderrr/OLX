@@ -141,10 +141,6 @@ def scrape_games_from_drive():
     games_file = "/tmp/games.csv"
     success = False
 
-    def scrape_games_from_drive():
-    games_file = "/tmp/games.csv"
-    success = False
-
     while not success:
         try:
             if not download_file_from_drive("games.csv", games_file):
@@ -186,7 +182,6 @@ def scrape_games_from_drive():
             time.sleep(30)
 
     print("✅ Scrapowanie zakończone pomyślnie.")
-
 # 🚀 Uruchomienie skryptu
 if __name__ == "__main__":
     scrape_games_from_drive()
