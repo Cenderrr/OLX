@@ -127,14 +127,86 @@ def get_olx_items(search_query, category):
 # 📊 Przetwarzanie i zapis danych
 def process_and_save_results(results, search_query):
     now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    local_file = f"/tmp/results_{now}.csv"
+    file_path = '/content/drive/My Drive/OLX Scrap/results.csv'
+    backup_path = f'/content/drive/My Drive/OLX Scrap/Backup/results_backup_{search_query}_{now}.csv'
+    scrap_path = f'/content/drive/My Drive/OLX Scrap/Scrap/scrap_{now}.csv'
 
-    df = pd.DataFrame(results)
-    df.to_csv(local_file, index=False)
+    # Sprawdź, czy plik już istnieje i utwórz kopię zapasową
+    if os.path.exists(file_path):
+        os.rename(file_path, backup_path)
+        print(f"Utworzono kopię zapasową: {backup_path}")
     
-    upload_file_to_drive(local_file, "results.csv")
-
-    print(f"✅ Zapisano wyniki dla: {search_query}")
+    # Utwórz DataFrame na podstawie listy `results`
+    df = pd.DataFrame(results)
+    
+    # Zapisz surowe dane do pliku CSV
+    df.to_csv(scrap_path, index=False)
+    print(f"Zapisano surowe dane do pliku: {scrap_path}")
+    
+    # Usuń duplikaty w kolumnie link
+    df = df.drop_duplicates(subset=['link'])
+    
+    # Przetwarzanie tytułów
+    keywords = re.sub(r'[^\w\s]', '', search_query).split()
+    keywords = [word for word in keywords if word.lower() != "gra"]
+    df = df[df['title'].str.contains('|'.join(keywords), case=False, na=False)]
+    
+    # Usuń wiersze zawierające "extended_search" w linku
+    df = df[~df['link'].str.contains('extended_search')]
+    
+    # Dodanie kolumny daty
+    df['date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Wyciągnięcie ID z linku
+    df['ID'] = df['link'].str.extract(r'ID(\w+)\.html')
+    
+    # Dodanie kolumny game
+    df['game'] = search_query
+    
+    # Czyszczenie i konwersja cen
+    df['price'] = df['price'].str.replace(',', '.', regex=False)
+    df['price'] = df['price'].str.replace(r'[^0-9.]', '', regex=True)
+    df['price'] = pd.to_numeric(df['price'], errors='coerce')
+    df = df.dropna(subset=['price'])
+    
+    # Parsowanie daty z location
+    df['date_posted'] = df['location'].str.extract(r'(\d+\s+\w+\s+\d+)')
+    months = {"stycznia": "01", "lutego": "02", "marca": "03", "kwietnia": "04", "maja": "05", "czerwca": "06", "lipca": "07", "sierpnia": "08", "września": "09", "października": "10", "listopada": "11", "grudnia": "12"}
+    
+    def convert_date(date_str):
+        try:
+            day, month_name, year = date_str.split()
+            month = months.get(month_name.lower(), "00")
+            return f"{year}-{month}-{day}"
+        except Exception:
+            return datetime.datetime.now().strftime("%Y-%m-%d")
+    
+    df['date_posted'] = df['date_posted'].apply(convert_date)
+    df['date_posted'] = pd.to_datetime(df['date_posted'], format='%Y-%m-%d', errors='coerce')
+    
+    # Czyszczenie kolumny location
+    df['location'] = df['location'].str.split('-', n=1).str[0]
+    df['location'] = df['location'].str.split(',', n=1).str[0]
+    df['location'] = df['location'].str.strip()
+    
+    # Kolejność kolumn
+    df = df[['game', 'date', 'ID', 'date_posted', 'title', 'price', 'location', 'link']]
+    
+    # Wczytaj istniejące dane, jeśli plik istnieje
+    if os.path.exists(file_path):
+        existing_df = pd.read_csv(file_path)
+        df = pd.concat([existing_df, df], ignore_index=True)
+    
+    # Zapisz przetworzone dane do pliku
+    df.to_csv(file_path, index=False)
+    print(f"Zapisano dane do pliku: {file_path}")
+    
+    # Wyświetl podsumowanie
+    print(f"Topic: {search_query}")
+    print(f"Liczba wierszy: {len(df)}")
+    
+    # Wyzeruj df
+    df = pd.DataFrame()
 
 # 📥 Pobranie listy gier z Google Drive
 def scrape_games_from_drive():
