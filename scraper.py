@@ -127,9 +127,19 @@ def get_olx_items(search_query, category):
 # 📊 Przetwarzanie i zapis danych
 def process_and_save_results(results, search_query):
     now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file_path = '/content/drive/My Drive/OLX Scrap/results.csv'
-    backup_path = f'/content/drive/My Drive/OLX Scrap/Backup/results_backup_{search_query}_{now}.csv'
-    scrap_path = f'/content/drive/My Drive/OLX Scrap/Scrap/scrap_{now}.csv'
+    
+    # Ścieżki do plików
+    base_dir = '/content/drive/My Drive/OLX Scrap'
+    file_path = os.path.join(base_dir, 'results.csv')
+    backup_dir = os.path.join(base_dir, 'Backup')
+    scrap_dir = os.path.join(base_dir, 'Scrap')
+    
+    # Utwórz katalogi, jeśli nie istnieją
+    os.makedirs(backup_dir, exist_ok=True)
+    os.makedirs(scrap_dir, exist_ok=True)
+    
+    backup_path = os.path.join(backup_dir, f'results_backup_{search_query}_{now}.csv')
+    scrap_path = os.path.join(scrap_dir, f'scrap_{now}.csv')
 
     # Sprawdź, czy plik już istnieje i utwórz kopię zapasową
     if os.path.exists(file_path):
@@ -207,7 +217,7 @@ def process_and_save_results(results, search_query):
     
     # Wyzeruj df
     df = pd.DataFrame()
-
+    
 # 📥 Pobranie listy gier z Google Drive
 def scrape_games_from_drive():
     games_file = "/tmp/games.csv"
