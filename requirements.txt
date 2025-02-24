@@ -1,6 +1,4 @@
-pandas
 selenium
-google-auth
-google-api-python-client
 webdriver-manager
 beautifulsoup4
+pandas
