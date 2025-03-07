@@ -8,7 +8,8 @@ on:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-
+    env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
