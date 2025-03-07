@@ -1,4 +1,4 @@
-name: Run Python Script
+name: Run Python Script - 07 march 2025
 
 on:
   schedule:
