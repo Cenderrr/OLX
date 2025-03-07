@@ -1,4 +1,4 @@
-name: Scrape OLX - GOOD ONE WORKING
+name: OLX Scrap Workflow
 
 on:
   schedule:
